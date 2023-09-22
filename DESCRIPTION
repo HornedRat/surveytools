@@ -1,0 +1,10 @@
+Package: surveytools
+Type: Package
+Title: A Package for Survey Data Research
+Version: 0.1.0
+Author: Jakub Wiatrak
+Maintainer: Jakub Wiatrak <wiatrak667@gmail.com>
+Description: A package with useful tool for basic analytics of survey data. Makes reading data, generating crosstabs and writing Excel files easier than with just R/dplyr
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
