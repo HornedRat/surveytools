@@ -44,6 +44,8 @@ Jakub Wiatrak
 df <- data.frame(x = c("q2", "q10", "q1", "q3", "q7", "q6", "q4", "q5", "q8", "q9"))
 arrange(df, mixedrank(x))
 
+}
+
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):
 % \keyword{ ~kwd1 }

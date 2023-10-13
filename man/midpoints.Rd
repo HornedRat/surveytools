@@ -43,7 +43,7 @@ df <- data.frame(a = 1:3, b = string_vector)
 
 df \%>\%
     mutate(b_num = midpoints(b))
-
+}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):
 % \keyword{ ~kwd1 }

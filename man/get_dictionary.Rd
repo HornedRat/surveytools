@@ -42,6 +42,7 @@ Jakub Wiatrak
 dat <- read.spss(file=sav, to.data.frame = TRUE)
 
 get_dictionary(dat)
+}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):
 % \keyword{ ~kwd1 }

@@ -54,6 +54,7 @@ tab1 <- make_tab(dat, FIRSTCHD, banner = FAMHXCVR)
 tab2 <- make_tab(dat, DAYOFWK, VITAL10, banner = FAMHXCVR)
 
 write_tab(tabs = list(tab1, tab2), "tabs.xlsx")
+}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):
