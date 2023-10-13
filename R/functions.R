@@ -108,9 +108,10 @@ make_tab <- function(df, ..., banner = NULL) {
 
 #function to write and format data to an excel sheet
 
-write_tab <- function(tabs, filename) {
+write_tab <- function(tabs, tests = NULL, filename) {
 
     #tabs - a LIST of tables
+    #tests - a corresponding list of tests
 
     pct = createStyle(numFmt="0%")
     smpl = createStyle(numFmt="0")
@@ -134,6 +135,23 @@ write_tab <- function(tabs, filename) {
         setColWidths(wb, "tables", 2, 50)
 
         start_row <- start_row + nrow(t) + 2
+    }
+
+    if (!is.null(tests)) {
+
+        addWorksheet(wb, "tests")
+
+        start_row <- 1
+
+        for(t in tabs) {
+
+            writeDataTable(wb, "tests", t, startRow = start_row, startCol = 1)
+
+            setColWidths(wb, "tests", 2, 50)
+
+            start_row <- start_row + nrow(t) + 2
+        }
+
     }
 
     saveWorkbook(wb, file = filename, overwrite = TRUE)
