@@ -143,7 +143,7 @@ write_tab <- function(tabs, tests = NULL, filename) {
 
         start_row <- 1
 
-        for(t in tabs) {
+        for(t in tests) {
 
             writeDataTable(wb, "tests", t, startRow = start_row, startCol = 1)
 
