@@ -192,3 +192,50 @@ midpoints <- function(vector) {
     sapply(vector, midpoint_string)
 }
 
+# function to get prop.test results for 2 samples
+
+get_prop_test <- function(proportions, samples, confidence) {
+
+    successes <- samples * proportions
+    p <- prop.test(x = successes, n = samples, correct = F)$p.value
+
+    greater <- NA
+
+    if (p < (1-confidence)) {
+        if (proportions[[1]] > proportions[[2]]) {
+            greater <- 1
+        } else if (proportions[[1]] < proportions[[2]]) {
+            greater <- 2
+        }
+    }
+
+    return(greater)
+
+}
+
+# function to produce a table with test results
+
+make_test <- function(tab, conf) {
+
+    s <- c(tab[[1, 5]], tab[[1, 6]])
+
+    suppressWarnings({
+        test_results <- apply(tab[2:nrow(tab),], 1, function(x) {
+            get_prop_test(
+                proportions = as.numeric(x[5:6]),
+                samples = s,
+                confidence = conf)
+        })
+    })
+
+    a <- c(FALSE, grepl(1,test_results))
+    b <- c(FALSE, grepl(2,test_results))
+
+    test_results_tab <- tab
+    test_results_tab[,4:6] <- NA
+
+    test_results_tab[a,5] <- "X"
+    test_results_tab[b,6] <- "X"
+
+    return(test_results_tab)
+}
