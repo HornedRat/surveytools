@@ -15,5 +15,6 @@ Depends:
     rlang,
     openxlsx,
     gtools,
-    foreign
+    foreign,
+    stringr
 
