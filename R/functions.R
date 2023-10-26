@@ -5,6 +5,7 @@ require(rlang)
 require(openxlsx)
 require(gtools)
 require(foreign)
+require(stringr)
 
 #function for mixed sorting
 
@@ -215,19 +216,51 @@ midpoints <- function(vector) {
 get_prop_test <- function(proportions, samples, confidence) {
 
     successes <- samples * proportions
-    p <- prop.test(x = successes, n = samples, correct = F)$p.value
 
-    greater <- NA
+    # get a matrix of Higher or Lower
+    hl <- matrix(nrow = length(proportions), ncol = length(proportions))
 
-    if (p < (1-confidence)) {
-        if (proportions[[1]] > proportions[[2]]) {
-            greater <- 1
-        } else if (proportions[[1]] < proportions[[2]]) {
-            greater <- 2
-        }
+    for (i in 1:length(proportions)) {
+    hl[i,] <- ifelse(proportions > proportions[i], "H",
+                        ifelse(proportions < proportions[i], "L", ""))
     }
 
-    return(greater)
+    # get a matrix of sig/not sig
+    p_table <- pairwise.prop.test(successes, samples)$p.value
+    p_table2 <- rbind(rep(NA, dim(p_table)[2]), p_table)
+    p_table2 <- cbind(p_table2, rep(NA, dim(p_table2)[1]))
+    p_table2[upper.tri(p_table2)] <- t(p_table2)[upper.tri(p_table2)]
+    sig_table <- p_table2 < (1-confidence)
+
+    #get test result
+
+    test_result <- vector("character", length = length(proportions))
+
+    for (i in 1:length(proportions)) {
+
+        comps <- hl[,i]
+        sig <- sig_table[i,]
+
+        ht <- grep(TRUE, sig == TRUE & comps == 'H')
+        lt <- grep(TRUE, sig == TRUE & comps == 'L')
+
+        ht_text <- paste(ht, collapse = ",")
+        lt_text <- paste(lt, collapse = ",")
+
+        higher_than <- NULL
+        lower_than <- NULL
+
+        if(length(ht > 0)) higher_than <- paste("Higher than", ht_text, collapse = ",")
+        if(length(lt > 0)) lower_than <- paste("Lower than", lt_text, collapse = ",")
+
+        text <- str_c(higher_than, lower_than, sep = ". ")
+
+        if (length(text) == 0) text <- ""
+
+        test_result[i] <- text
+    }
+
+    return(test_result)
 
 }
 
@@ -235,25 +268,25 @@ get_prop_test <- function(proportions, samples, confidence) {
 
 make_test <- function(tab, conf) {
 
-    s <- c(tab[[1, 5]], tab[[1, 6]])
+    s <- as.numeric(tab[1, 5:ncol(tab)])
+    results <- matrix(NA, nrow(tab)-1, ncol(tab) - 4)
 
     suppressWarnings({
-        test_results <- apply(tab[2:nrow(tab),], 1, function(x) {
-            get_prop_test(
-                proportions = as.numeric(x[5:6]),
-                samples = s,
-                confidence = conf)
-        })
+        for (row_i in 2:nrow(tab)) {
+            results[row_i-1,] <-
+                get_prop_test(
+                    proportions = as.numeric(tab[row_i, 5:ncol(tab)]),
+                    samples = s,
+                    confidence = conf)
+        }
     })
 
-    a <- c(FALSE, grepl(1,test_results))
-    b <- c(FALSE, grepl(2,test_results))
-
     test_results_tab <- tab
-    test_results_tab[,4:6] <- NA
-
-    test_results_tab[a,5] <- "X"
-    test_results_tab[b,6] <- "X"
+    test_results_tab[,4:ncol(tab)] <- NA
+    test_results_tab[1,] <- NA
+    test_results_tab[1,5:ncol(tab)] <- as.list(as.character(1:(ncol(tab)-4)))
+    test_results_tab[1,3] <- "Column number"
+    test_results_tab[2:nrow(tab),5:ncol(tab)] <- results
 
     return(test_results_tab)
 }
