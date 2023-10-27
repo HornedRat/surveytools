@@ -107,6 +107,72 @@ make_tab <- function(df, ..., banner = NULL) {
 
 }
 
+#function for tables with means
+
+make_tab_num <- function(df, ..., banner = NULL) {
+
+    dict <- get_dictionary(df)
+
+    ban <- enquo(banner)
+
+    suppressMessages(
+        total_tab <- df %>%
+            select(...) %>%
+            pivot_longer(cols = everything(), names_to = "variable") %>%
+            group_by(variable) %>%
+            summarise(n = n(), mean = mean(value, na.rm = T)) %>%
+            ungroup()
+    )
+
+    total_n <- min(total_tab$n)
+
+    suppressMessages(
+        total_tab <- total_tab %>%
+            rename(total = mean) %>%
+            left_join(dict) %>%
+            mutate(value = "mean") %>%
+            select(variable, label, value, total) %>%
+            arrange(mixedrank(variable)) %>%
+            add_row(value = "Sample size", total = total_n, .before = 1)
+    )
+
+    if(!quo_is_null(ban)) {
+
+        suppressMessages(
+            banner_tab <- df %>%
+                select(..., {{banner}}) %>%
+                pivot_longer(cols = -{{banner}}, names_to = "variable") %>%
+                group_by(variable, {{banner}}) %>%
+                summarise(n = n(), mean = mean(value, na.rm = T))
+        )
+
+        suppressMessages(
+            banner_sample <- banner_tab %>%
+                group_by({{banner}}) %>%
+                summarise(sample_size = min(n)) %>%
+                pivot_wider(names_from = {{banner}}, values_from = sample_size) %>%
+                mutate(variable = NA, label=NA, value="Sample size", total = total_n) %>%
+                select(variable, label, value, total, everything())
+        )
+
+        suppressMessages(
+            banner_tab <- banner_tab %>%
+                mutate(value = "mean") %>%
+                pivot_wider(id_cols = c(variable, value), names_from = {{banner}}, values_from = mean) %>%
+                left_join(total_tab) %>%
+                left_join(dict) %>%
+                arrange(mixedrank(variable))
+        )
+
+        banner_tab <- bind_rows(banner_sample, banner_tab)
+
+        return(banner_tab)
+    } else {
+        return(total_tab)
+    }
+
+}
+
 #function to write and format data to an excel sheet
 
 write_tab <- function(tabs, tests = NULL, filename) {
